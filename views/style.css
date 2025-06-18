@@ -1,0 +1,27 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+.login-container {
+  width: 300px;
+  margin: 100px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #ccc;
+}
+label, input, button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+button {
+  padding: 8px;
+  cursor: pointer;
+}
+#message {
+  color: red;
+  min-height: 20px;
+}

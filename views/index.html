@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>File Uploader</title>
+    <style>
+        /* Общие стили */
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #333;
+            max-width: 480px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1.5px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="file"]:hover,
+        input[type="file"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button[type="submit"] {
+            padding: 12px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        #status {
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            color: #555;
+            min-height: 1.5em;
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+
+        #status.error {
+            color: #e74c3c;
+        }
+
+        #status.success {
+            color: #27ae60;
+        }
+
+        #linkSection {
+            text-align: center;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: inset 0 0 10px #bdc3c7;
+            user-select: all;
+        }
+
+        #linkSection p {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            word-break: break-all;
+        }
+
+        #linkSection a {
+            color: #2980b9;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        #linkSection a:hover {
+            text-decoration: underline;
+        }
+
+        #copyButton {
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #copyButton:hover {
+            background-color: #27ae60;
+        }
+
+        a.logout-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            font-weight: 600;
+            color: #7f8c8d;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a.logout-link:hover {
+            color: #34495e;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Загрузка файла</h1>
+    <form id="uploadForm">
+        <input type="file" name="file" required />
+        <button type="submit">Загрузить</button>
+        <div id="progressContainer"
+            style="display:none; width: 100%; background:#eee; border-radius:4px; overflow:hidden; margin-bottom: 20px;">
+            <div id="progressBar" style="height: 20px; width: 0; background: #3498db;"></div>
+        </div>
+
+    </form>
+
+    <div id="status"></div>
+
+    <div id="linkSection" style="display: none;">
+        <p>Ссылка: <a id="downloadLink" href="" target="_blank" rel="noopener noreferrer"></a></p>
+        <button id="copyButton" type="button">Скопировать ссылку</button>
+    </div>
+
+    <a href="/logout" class="logout-link">Выйти</a>
+    <a href="/admin" class="logout-link">Статистика</a>
+
+    <script>
+        const form = document.getElementById("uploadForm");
+        const statusDiv = document.getElementById("status");
+        const linkSection = document.getElementById("linkSection");
+        const downloadLink = document.getElementById("downloadLink");
+        const copyButton = document.getElementById("copyButton");
+
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+
+            statusDiv.textContent = "";
+            statusDiv.className = "";
+            linkSection.style.display = "none";
+
+            progressContainer.style.display = "block";
+            progressBar.style.width = "0%";
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.open("POST", "/upload");
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percent = (event.loaded / event.total) * 100;
+                    progressBar.style.width = percent + "%";
+                }
+            };
+
+            xhr.onload = () => {
+                progressContainer.style.display = "none";
+
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        const fullUrl = location.origin + data.downloadUrl;
+
+                        downloadLink.href = fullUrl;
+                        downloadLink.textContent = fullUrl;
+                        linkSection.style.display = "block";
+
+                        statusDiv.textContent = "Файл загружен";
+                        statusDiv.classList.add("success");
+                    } catch {
+                        statusDiv.textContent = "Ошибка разбора ответа сервера";
+                        statusDiv.classList.add("error");
+                    }
+                } else {
+                    statusDiv.textContent = `Ошибка сервера: ${xhr.status}`;
+                    statusDiv.classList.add("error");
+                }
+            };
+
+            xhr.onerror = () => {
+                progressContainer.style.display = "none";
+                statusDiv.textContent = "Ошибка при загрузке";
+                statusDiv.classList.add("error");
+            };
+
+            xhr.send(formData);
+        });
+
+        copyButton.addEventListener("click", () => {
+            const url = downloadLink.href;
+            navigator.clipboard.writeText(url).then(() => {
+                copyButton.textContent = "Скопировано!";
+                setTimeout(() => (copyButton.textContent = "Скопировать ссылку"), 2000);
+            });
+        });
+    </script>
+</body>
+
+</html>

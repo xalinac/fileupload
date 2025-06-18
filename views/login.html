@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Вход в систему</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+    <div class="login-container">
+        <h1>Вход</h1>
+        <form id="loginForm" method="POST" action="/login">
+            <label for="username">Логин</label>
+            <input type="text" id="username" name="username" required autocomplete="username" />
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password" />
+            <button type="submit">Войти</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById("loginForm");
+        const message = document.getElementById("message");
+
+        // Получаем redirect-параметр из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectRaw = urlParams.get("redirect") || "/";
+        const redirect = redirectRaw.startsWith("/download/")
+            ? redirectRaw.replace("/download/", "/download-view/")
+            : redirectRaw;
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            message.textContent = "Выполняется вход...";
+
+            const formData = new URLSearchParams(new FormData(form));
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString(),
+                credentials: "include"
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                message.textContent = "Успешный вход! Перенаправляем...";
+                window.location.href = redirect;
+            } else {
+                message.textContent = result.error || "Ошибка входа";
+            }
+        });
+    </script>
+
+</body>
+
+</html>

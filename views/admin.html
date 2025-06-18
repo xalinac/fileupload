@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Статистика</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+        }
+
+        th,
+        td {
+            padding: 0.5em 1em;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        a.download-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a.download-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Статистика</h1>
+    <a href="/">Назад</a>
+    <div id="filesContainer">Загрузка списка файлов...</div>
+
+    <script>
+        function formatDate(ts) {
+            if (!ts) return "";
+            const d = new Date(ts);
+            if (isNaN(d)) return "";
+            return d.toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" });
+        }
+
+        async function fetchFiles() {
+            const res = await fetch('/api/files', { credentials: 'include' });
+            const container = document.getElementById('filesContainer');
+
+            if (!res.ok) {
+                container.textContent = 'Ошибка загрузки файлов';
+                return;
+            }
+
+            const files = await res.json();
+
+            if (files.length === 0) {
+                container.textContent = 'Файлов нет';
+                return;
+            }
+
+            const table = document.createElement('table');
+
+            // Заголовок
+            const header = document.createElement('thead');
+            header.innerHTML = `
+        <tr>
+          <th>Имя файла</th>
+          <th>Дата загрузки</th>
+          <th>Последний доступ</th>
+          <th>Ссылка</th>
+        </tr>
+      `;
+            table.appendChild(header);
+
+            const tbody = document.createElement('tbody');
+
+            for (const file of files) {
+                const tr = document.createElement("tr");
+
+                const tdName = document.createElement("td");
+                tdName.textContent = file.filename;
+
+                const tdUploaded = document.createElement("td");
+                tdUploaded.textContent = new Date(file.uploadedAt).toLocaleString();
+
+                const tdLastAccess = document.createElement("td");
+                tdLastAccess.textContent = new Date(file.lastAccess).toLocaleString();
+
+                const tdLink = document.createElement("td");
+                const a = document.createElement("a");
+                a.href = "/download/" + file.id;
+                a.textContent = "Скачать";
+                tdLink.appendChild(a);
+
+                tr.appendChild(tdName);
+                tr.appendChild(tdUploaded);
+                tr.appendChild(tdLastAccess);
+                tr.appendChild(tdLink);
+
+                tbody.appendChild(tr);
+            }
+
+
+            table.appendChild(tbody);
+
+            container.textContent = "";
+            container.appendChild(table);
+        }
+
+        fetchFiles();
+    </script>
+</body>
+
+</html>
