@@ -31,20 +31,28 @@
 
 ---
 
-## Установка и запуск
+## Установка и запуск:
 
 ```bash
 git clone https://github.com/xalinac/fileupload.git
+```
+```
 cd fileupload
+```
+```
 npm install
+```
+```
 npm run build
+```
+```
 npm start
 ```
 
 После запуска приложение будет доступно по адресу:
 http://localhost:3000
 
-##Авторизация:
+## Авторизация:
 - Логин: user
 - Пароль: 1234
 - Хранение токена — через HttpOnly cookie
