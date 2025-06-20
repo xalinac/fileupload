@@ -3,8 +3,8 @@ import * as path from "path";
 
 const UPLOAD_DIR = path.resolve(__dirname, "../../uploads");
 const META_PATH = path.resolve(__dirname, "../../data/meta.json");
-// Для теста 60 секунд, в бою - 30 дней (30 * 24 * 60 * 60 * 1000)
-const MAX_FILE_AGE = 60000;
+// Максимальный возраст файла 30 дней
+const MAX_FILE_AGE = 30 * 24 * 60 * 60 * 1000;
 
 interface FileMeta {
   id: string;
@@ -99,8 +99,8 @@ export class FileCleaner {
     }
   }
 
-  //60 * 60 * 1000 час
-  static start(interval = 1000) {
+  //Очистка файлов каждый час
+  static start(interval = 60 * 60 * 1000) {
     this.cleanOldFiles();
     setInterval(() => this.cleanOldFiles(), interval);
   }

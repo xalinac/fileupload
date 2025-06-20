@@ -47,7 +47,7 @@ const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
 const UPLOAD_DIR = path.resolve(__dirname, "../../uploads");
 const META_PATH = path.resolve(__dirname, "../../data/meta.json");
-// Для теста 5 секунд, в бою - 30 дней (30 * 24 * 60 * 60 * 1000)
+// Для теста 60 секунд, в бою - 30 дней (30 * 24 * 60 * 60 * 1000)
 const MAX_FILE_AGE = 5000;
 class FileCleaner {
     static cleanOldFiles() {
@@ -131,7 +131,7 @@ class FileCleaner {
             }
         });
     }
-    //60 * 60 * 1000
+    //60 * 60 * 1000 час
     static start(interval = 1000) {
         this.cleanOldFiles();
         setInterval(() => this.cleanOldFiles(), interval);
